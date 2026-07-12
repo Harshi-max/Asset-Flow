@@ -11,12 +11,12 @@ export async function GET(request: Request) {
   const where = filter === "all"
     ? {}
     : filter === "asset"
-      ? { action: { contains: "asset", mode: "insensitive" } }
+      ? { action: { contains: "asset" } }
       : filter === "booking"
-        ? { action: { contains: "booking", mode: "insensitive" } }
+        ? { action: { contains: "booking" } }
         : filter === "allocation"
-          ? { action: { contains: "alloc", mode: "insensitive" } }
-          : { action: { contains: filter, mode: "insensitive" } };
+          ? { action: { contains: "alloc" } }
+          : { action: { contains: filter } };
 
   const [items, total] = await Promise.all([
     prisma.activityLog.findMany({ where, skip: (page - 1) * perPage, take: perPage, orderBy: { createdAt: "desc" } }),
