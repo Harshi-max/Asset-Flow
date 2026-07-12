@@ -11,4 +11,5 @@ export const transferRequestSchema = z.object({
   assetId: z.string().min(1),
   toDeptId: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
+  requestedById: z.string().min(1),
 });
