@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -9,31 +10,56 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
+    setLoading(true);
+    setError("");
+
     const response = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
+
     if (response.ok) {
       router.push("/dashboard");
+      return;
     }
+
+    const data = await response.json().catch(() => ({}));
+    setError(data.message || "Unable to sign in. Please try again.");
+    setLoading(false);
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-6 dark:bg-slate-950">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Welcome back</CardTitle>
+    <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(15,23,42,0.12),_transparent_40%),linear-gradient(135deg,_#f8fafc_0%,_#eef2ff_100%)] p-6 dark:bg-[radial-gradient(circle_at_top,_rgba(148,163,184,0.16),_transparent_45%),linear-gradient(135deg,_#020617_0%,_#0f172a_100%)]">
+      <Card className="w-full max-w-md border-slate-200/80 shadow-[0_20px_80px_-36px_rgba(15,23,42,0.35)] dark:border-slate-800">
+        <CardHeader className="space-y-3">
+          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500">AssetFlow</p>
+          <CardTitle className="text-2xl">Welcome back</CardTitle>
+          <p className="text-sm text-slate-600 dark:text-slate-300">Sign in to continue working from your dashboard.</p>
         </CardHeader>
         <CardContent>
           <form className="space-y-4" onSubmit={handleSubmit}>
-            <input className="w-full rounded-md border border-slate-300 p-3" placeholder="Email" value={email} onChange={(event) => setEmail(event.target.value)} />
-            <input className="w-full rounded-md border border-slate-300 p-3" placeholder="Password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
-            <Button className="w-full" type="submit">Sign in</Button>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-200" htmlFor="email">Email</label>
+              <input id="email" className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-800 dark:focus:border-slate-300" placeholder="you@company.com" value={email} onChange={(event) => setEmail(event.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-200" htmlFor="password">Password</label>
+              <input id="password" className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-800 dark:focus:border-slate-300" placeholder="••••••••" type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
+            </div>
+            {error ? <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300">{error}</p> : null}
+            <Button className="w-full" size="lg" type="submit" disabled={loading}>
+              {loading ? "Signing in..." : "Sign in"}
+            </Button>
           </form>
+          <p className="mt-5 text-center text-sm text-slate-600 dark:text-slate-300">
+            Need an account? <Link href="/signup" className="font-semibold text-slate-900 underline-offset-4 hover:underline dark:text-white">Create one</Link>
+          </p>
         </CardContent>
       </Card>
     </div>
