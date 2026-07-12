@@ -8,28 +8,42 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(cuid())
-  email         String   @unique
+  id            String       @id @default(cuid())
+  email         String       @unique
   name          String?
   passwordHash  String?
-  role          String   @default("USER")
-  department    String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  role          String       @default("EMPLOYEE")
+  departmentId  String?
+  department    Department?  @relation("DepartmentMembers", fields: [departmentId], references: [id])
+  isActive      Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  managedDept   Department?  @relation("DepartmentHead")
 }
 
 model Department {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String       @id @default(cuid())
+  name         String       @unique
+  description  String?
+  parentId     String?
+  parent       Department?  @relation("DepartmentHierarchy", fields: [parentId], references: [id])
+  children     Department[] @relation("DepartmentHierarchy")
+  headId       String?      @unique
+  head         User?        @relation("DepartmentHead", fields: [headId], references: [id])
+  members      User[]       @relation("DepartmentMembers")
+  active       Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 }
 
 model AssetCategory {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String   @id @default(cuid())
+  name           String   @unique
+  description    String?
+  dynamicFields  Json?
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model Asset {
