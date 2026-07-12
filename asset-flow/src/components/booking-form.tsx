@@ -33,6 +33,7 @@ export default function BookingForm({ onCreated }: { onCreated?: () => void }) {
 
   return (
     <form onSubmit={handleSubmit} style={{ display: "grid", gap: 8, maxWidth: 520 }}>
+      {error ? <div style={{ color: "#b91c1c", background: "#fef2f2", padding: 8, borderRadius: 8 }}>{error}</div> : null}
       <label>Title<input value={title} onChange={(e)=>setTitle(e.target.value)} /></label>
       <label>Resource Type<select value={resourceType} onChange={(e)=>setResourceType(e.target.value)}><option>EQUIPMENT</option><option>ROOM</option><option>VEHICLE</option></select></label>
       <label>Resource ID (optional)<input value={resourceId} onChange={(e)=>setResourceId(e.target.value)} /></label>
@@ -40,8 +41,7 @@ export default function BookingForm({ onCreated }: { onCreated?: () => void }) {
       <label>End At<input value={endAt} onChange={(e)=>setEndAt(e.target.value)} placeholder="2026-07-12T12:00:00Z" /></label>
       <label>Organizer ID (optional)<input value={organizerId} onChange={(e)=>setOrganizerId(e.target.value)} /></label>
       <div>
-        <button type="submit" disabled={loading}>{loading ? "Booking..." : "Create Booking"}</button>
-        {error && <div style={{ color: "red" }}>{error}</div>}
+        <button type="submit" disabled={loading} style={{ opacity: loading ? 0.7 : 1 }}>{loading ? "Booking..." : "Create Booking"}</button>
       </div>
     </form>
   );

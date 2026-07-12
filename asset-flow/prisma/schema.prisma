@@ -9,36 +9,157 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  name         String?
-  passwordHash String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String?
+  passwordHash  String?
+  role          String   @default("EMPLOYEE")
+  departmentId  String?
+  department    Department? @relation("DepartmentMembers", fields: [departmentId], references: [id])
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  assets Asset[]
-
+  managedDept   Department? @relation("DepartmentHead")
+  assets        Asset[]
+  allocations   Allocation[]
+  transferRequests TransferRequest[] @relation("TransferRequestedBy")
+  bookings      Booking[]
   maintenanceRequests MaintenanceRequest[] @relation("RequestedBy")
-
   assignedMaintenance MaintenanceRequest[] @relation("Technician")
 }
 
+model Department {
+  id           String       @id @default(cuid())
+  name         String       @unique
+  description  String?
+  parentId     String?
+  parent       Department?  @relation("DepartmentHierarchy", fields: [parentId], references: [id])
+  children     Department[] @relation("DepartmentHierarchy")
+  headId       String?      @unique
+  head         User?        @relation("DepartmentHead", fields: [headId], references: [id])
+  members      User[]       @relation("DepartmentMembers")
+  active       Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  assets       Asset[]
+  allocations  Allocation[]
+  transfers    TransferRequest[]
+}
+
+model AssetCategory {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  description   String?
+  dynamicFields Json?
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  assets        Asset[]
+}
+
 model Asset {
-  id          String  @id @default(cuid())
-  tag         String  @unique
-  name        String
-  description String?
-  category    String
-  status      String
-  location    String
-
-  ownerId String?
-  owner   User?   @relation(fields: [ownerId], references: [id])
-
+  id                String            @id @default(cuid())
+  tag               String            @unique
+  name              String
+  description       String?
+  categoryId        String?
+  category          AssetCategory?    @relation(fields: [categoryId], references: [id])
+  serialNumber      String?
+  qrCode            String?
+  purchaseDate      DateTime?
+  purchaseCost      Float?
+  condition         String?
+  warranty          String?
+  departmentId      String?
+  department        Department?       @relation(fields: [departmentId], references: [id])
+  location          String?
+  sharedResource    Boolean           @default(false)
+  status            String            @default("ACTIVE")
+  ownerId           String?
+  owner             User?             @relation(fields: [ownerId], references: [id])
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
   maintenanceRequests MaintenanceRequest[]
+  history           AssetHistory[]
+  documents         AssetDocument[]
+  allocations       Allocation[]
+  transferRequests  TransferRequest[]
+}
 
+model AssetHistory {
+  id        String   @id @default(cuid())
+  assetId   String
+  asset     Asset    @relation(fields: [assetId], references: [id])
+  action    String
+  details   String?
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+}
+
+model AssetDocument {
+  id        String   @id @default(cuid())
+  assetId   String
+  asset     Asset    @relation(fields: [assetId], references: [id])
+  name      String
+  url       String
+  type      String
+  createdAt DateTime @default(now())
+}
+
+model Allocation {
+  id             String   @id @default(cuid())
+  assetId        String
+  asset          Asset    @relation(fields: [assetId], references: [id])
+  holderId       String
+  holder         User     @relation(fields: [holderId], references: [id])
+  departmentId   String?
+  department     Department? @relation(fields: [departmentId], references: [id])
+  status         String   @default("ALLOCATED")
+  expectedReturn DateTime?
+  returnedAt     DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  history        AllocationHistory[]
+}
+
+model AllocationHistory {
+  id           String   @id @default(cuid())
+  allocationId String
+  allocation   Allocation @relation(fields: [allocationId], references: [id])
+  action       String
+  notes        String?
+  createdAt    DateTime @default(now())
+}
+
+model TransferRequest {
+  id             String   @id @default(cuid())
+  assetId        String
+  asset          Asset    @relation(fields: [assetId], references: [id])
+  requestedById  String
+  requestedBy    User     @relation("TransferRequestedBy", fields: [requestedById], references: [id])
+  fromDeptId     String?
+  toDeptId       String?
+  status         String   @default("REQUESTED")
+  approvedByDept Boolean  @default(false)
+  approvedByMgr  Boolean  @default(false)
+  departmentId   String?
+  department     Department? @relation(fields: [departmentId], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Booking {
+  id           String   @id @default(cuid())
+  title        String
+  resourceType String
+  resourceId   String?
+  startAt      DateTime
+  endAt        DateTime
+  organizerId  String?
+  organizer    User?    @relation(fields: [organizerId], references: [id])
+  status       String   @default("PENDING")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model MaintenanceRequest {
@@ -54,18 +175,38 @@ model MaintenanceRequest {
   technician   User?   @relation("Technician", fields: [technicianId], references: [id])
 
   priority String
-
   status String @default("REQUESTED")
-
   issue String
-
   attachments String[]
-
   approvalStatus String @default("PENDING")
-
   resolutionNotes String?
-
   createdAt DateTime @default(now())
-
   updatedAt DateTime @updatedAt
+}
+
+model Maintenance {
+  id        String   @id @default(cuid())
+  title     String
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Audit {
+  id        String   @id @default(cuid())
+  action    String
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  action    String
+  createdAt DateTime @default(now())
 }

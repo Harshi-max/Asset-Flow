@@ -35,6 +35,7 @@ export default function AllocationForm({ onCreated }: { onCreated?: () => void }
 
   return (
     <form onSubmit={handleSubmit} style={{ display: "grid", gap: 8, maxWidth: 520 }}>
+      {error ? <div style={{ color: "#b91c1c", background: "#fef2f2", padding: 8, borderRadius: 8 }}>{error}</div> : null}
       <label>
         Asset ID
         <input value={assetId} onChange={(e) => setAssetId(e.target.value)} />
@@ -52,8 +53,7 @@ export default function AllocationForm({ onCreated }: { onCreated?: () => void }
         <input value={expectedReturn} onChange={(e) => setExpectedReturn(e.target.value)} placeholder="2026-07-20T10:00:00Z" />
       </label>
       <div>
-        <button type="submit" disabled={loading}>{loading ? "Allocating..." : "Allocate"}</button>
-        {error && <div style={{ color: "red" }}>{error}</div>}
+        <button type="submit" disabled={loading} style={{ opacity: loading ? 0.7 : 1 }}>{loading ? "Allocating..." : "Allocate"}</button>
       </div>
     </form>
   );
