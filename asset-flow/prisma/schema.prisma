@@ -34,6 +34,7 @@ model Department {
   active       Boolean      @default(true)
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
+  assets       Asset[]
 }
 
 model AssetCategory {
@@ -44,18 +45,50 @@ model AssetCategory {
   active         Boolean  @default(true)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  assets         Asset[]
 }
 
 model Asset {
-  id            String   @id @default(cuid())
-  tag           String   @unique
-  name          String
-  description   String?
-  category      String
-  status        String
-  location      String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                String            @id @default(cuid())
+  name              String
+  categoryId        String?
+  category          AssetCategory?    @relation(fields: [categoryId], references: [id])
+  serialNumber      String?           @unique
+  tag               String            @unique
+  qrCode            String?
+  purchaseDate      DateTime?
+  purchaseCost      Float?
+  condition         String?
+  warranty          String?
+  departmentId      String?
+  department        Department?       @relation(fields: [departmentId], references: [id])
+  location          String?
+  sharedResource    Boolean           @default(false)
+  status            String            @default("ACTIVE")
+  description       String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  history           AssetHistory[]
+  documents         AssetDocument[]
+}
+
+model AssetHistory {
+  id        String   @id @default(cuid())
+  assetId   String
+  asset     Asset    @relation(fields: [assetId], references: [id])
+  action    String
+  details   String?
+  createdAt DateTime @default(now())
+}
+
+model AssetDocument {
+  id        String   @id @default(cuid())
+  assetId   String
+  asset     Asset    @relation(fields: [assetId], references: [id])
+  name      String
+  url       String
+  type      String
+  createdAt DateTime @default(now())
 }
 
 model Booking {
