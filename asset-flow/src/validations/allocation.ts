@@ -12,4 +12,5 @@ export const transferRequestSchema = z.object({
   toDeptId: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
   requestedById: z.string().min(1),
+  fromDeptId: z.string().optional().nullable(),
 });
