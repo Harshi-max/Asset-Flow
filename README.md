@@ -281,9 +281,30 @@ ASSET ||--o{ AUDITITEM : verified
 
 - PostgreSQL
 
-## File Storage
+## Data Storage
 
-- Local Storage (`/uploads`)
+### PostgreSQL (Primary Database)
+
+Stores all application data:
+
+- Users
+- Departments
+- Employees
+- Assets
+- Categories
+- Bookings
+- Maintenance Requests
+- Audit Cycles
+- Notifications
+- Activity Logs
+- Reports
+- File Metadata
+
+### Document Storage
+
+Asset images and documents are stored in a local `/uploads` directory during development. Their metadata (file name, path, MIME type, uploader, upload date, and associated asset) is stored in PostgreSQL using Prisma ORM.
+
+> In a production deployment, the `/uploads` directory can be replaced with an object storage service (such as Amazon S3 or Azure Blob Storage) without changing the application's core business logic.
 
 ---
 
@@ -293,22 +314,11 @@ This project intentionally avoids third-party Backend-as-a-Service platforms.
 
 ### ✅ Used
 
-- PostgreSQL
-- Prisma ORM
-- JWT Authentication
-- Local File Storage
-
-### ❌ Not Used
-
-- Firebase
-- Supabase
-- MongoDB Atlas
-- Neon
-- PlanetScale
-- Clerk
-- Auth0
-- AWS Amplify
-
+- **PostgreSQL** – Primary relational database for all enterprise data.
+- **Prisma ORM** – Type-safe database access, schema management, and migrations.
+- **JWT Authentication** – Secure authentication and role-based access control (RBAC).
+- **PostgreSQL-backed Data Storage** – Stores users, departments, assets, bookings, maintenance records, audit logs, notifications, and application metadata.
+- **Local Upload Storage (Development)** – Asset images and documents are stored locally, while their metadata is managed in PostgreSQL via Prisma.
 ---
 
 # 📂 Project Structure
