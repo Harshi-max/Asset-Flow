@@ -1,0 +1,32 @@
+// This schema establishes the baseline data model for AssetFlow.
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  assets       Asset[]
+}
+
+model Asset {
+  id          String   @id @default(cuid())
+  tag         String   @unique
+  name        String
+  description String?
+  category    String
+  status      String
+  location    String
+  ownerId     String?
+  owner       User?    @relation(fields: [ownerId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
