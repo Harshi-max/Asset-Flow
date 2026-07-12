@@ -1,31 +1,40 @@
+import { Breadcrumb } from "@/components/layout/breadcrumb";
+import { PageWrapper } from "@/components/layout/page-wrapper";
+import { PageHeader } from "@/components/common/page-header";
+import { StatCard } from "@/components/common/stat-card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 const metrics = [
-  { label: "Active Assets", value: "1,248", change: "+12.4%" },
-  { label: "Maintenance", value: "84", change: "+3.2%" },
-  { label: "Pending Reviews", value: "27", change: "-1.8%" },
+  { label: "Active Assets", value: "1,248", trend: "+12.4%" },
+  { label: "Maintenance", value: "84", trend: "+3.2%" },
+  { label: "Pending Reviews", value: "27", trend: "-1.8%" },
 ];
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-6">
-      <div className="rounded-3xl border border-border bg-white p-8 shadow-sm dark:bg-slate-900">
-        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-blue-600">Operations Overview</p>
-        <h1 className="mt-3 text-3xl font-semibold">Welcome back, operations team.</h1>
-        <p className="mt-3 max-w-2xl text-sm text-slate-600 dark:text-slate-400">
-          AssetFlow is being shaped as a robust enterprise control center for monitoring assets, maintenance, and resource health.
-        </p>
-      </div>
+    <PageWrapper>
+      <Breadcrumb items={[{ label: "Overview" }]} />
+      <PageHeader
+        title="Operations Overview"
+        description="A placeholder enterprise shell for the AssetFlow foundation."
+      />
 
       <div className="grid gap-4 md:grid-cols-3">
         {metrics.map((metric) => (
-          <div key={metric.label} className="rounded-2xl border border-border bg-white p-5 shadow-sm dark:bg-slate-900">
-            <p className="text-sm text-slate-500">{metric.label}</p>
-            <div className="mt-3 flex items-end justify-between">
-              <span className="text-2xl font-semibold">{metric.value}</span>
-              <span className="text-sm font-medium text-emerald-600">{metric.change}</span>
-            </div>
-          </div>
+          <StatCard key={metric.label} {...metric} />
         ))}
       </div>
-    </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Foundation Status</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            The project foundation has been prepared with the requested structure, tooling, Prisma setup, and reusable UI shell.
+          </p>
+        </CardContent>
+      </Card>
+    </PageWrapper>
   );
 }

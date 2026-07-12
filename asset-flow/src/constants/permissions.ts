@@ -1,0 +1,9 @@
+export const PERMISSIONS = {
+  VIEW_ASSETS: "VIEW_ASSETS",
+  MANAGE_ASSETS: "MANAGE_ASSETS",
+  VIEW_BOOKINGS: "VIEW_BOOKINGS",
+  MANAGE_BOOKINGS: "MANAGE_BOOKINGS",
+} as const;
+
+export const ROLE_OPTIONS = ["ADMIN", "MANAGER", "USER"] as const;
+export const STATUS_OPTIONS = ["ACTIVE", "PENDING", "ARCHIVED"] as const;
