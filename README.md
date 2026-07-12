@@ -3,7 +3,7 @@
 
 ![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-blue?logo=postgresql)
+![SQLite](https://img.shields.io/badge/SQLite-Database-blue?logo=sqlite)
 ![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?logo=prisma)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.x-38BDF8?logo=tailwindcss)
 ![License](https://img.shields.io/badge/License-MIT-green)
@@ -85,7 +85,7 @@ Service["Business Logic"]
 
 Service --> Prisma
 
-Prisma --> PostgreSQL
+Prisma --> SQLite
 
 Service --> Storage["Local File Storage"]
 
@@ -274,16 +274,16 @@ ASSET ||--o{ AUDITITEM : verified
 
 - Next.js API Routes
 - Prisma ORM
-- PostgreSQL
+- SQLite
 - JWT Authentication
 
 ## Database
 
-- PostgreSQL
+- SQLite
 
 ## Data Storage
 
-### PostgreSQL (Primary Database)
+### SQLite (Primary Database)
 
 Stores all application data:
 
@@ -302,7 +302,7 @@ Stores all application data:
 
 ### Document Storage
 
-Asset images and documents are stored in a local `/uploads` directory during development. Their metadata (file name, path, MIME type, uploader, upload date, and associated asset) is stored in PostgreSQL using Prisma ORM.
+Asset images and documents are stored in a local `/uploads` directory during development. Their metadata (file name, path, MIME type, uploader, upload date, and associated asset) is stored in SQLite using Prisma ORM.
 
 > In a production deployment, the `/uploads` directory can be replaced with an object storage service (such as Amazon S3 or Azure Blob Storage) without changing the application's core business logic.
 
@@ -314,11 +314,11 @@ This project intentionally avoids third-party Backend-as-a-Service platforms.
 
 ### ✅ Used
 
-- **PostgreSQL** – Primary relational database for all enterprise data.
+- **SQLite** – Primary relational database for all enterprise data.
 - **Prisma ORM** – Type-safe database access, schema management, and migrations.
 - **JWT Authentication** – Secure authentication and role-based access control (RBAC).
-- **PostgreSQL-backed Data Storage** – Stores users, departments, assets, bookings, maintenance records, audit logs, notifications, and application metadata.
-- **Local Upload Storage (Development)** – Asset images and documents are stored locally, while their metadata is managed in PostgreSQL via Prisma.
+- **SQLite-backed Data Storage** – Stores users, departments, assets, bookings, maintenance records, audit logs, notifications, and application metadata.
+- **Local Upload Storage (Development)** – Asset images and documents are stored locally, while their metadata is managed in SQLite via Prisma.
 ---
 
 # 📂 Project Structure
@@ -370,7 +370,7 @@ npm install
 Create a `.env` file.
 
 ```env
-DATABASE_URL="postgresql://username:password@localhost:5432/assetflow"
+DATABASE_URL="sqlite://username:password@localhost:5432/assetflow"
 
 JWT_SECRET=your_secret_key
 ```
