@@ -355,8 +355,9 @@ AssetFlow
 
 ```bash
 git clone <repository-url>
-
-cd AssetFlow
+cd Asset-Flow\asset-flow
+npm install
+npm run build
 ```
 
 ## Install Dependencies
