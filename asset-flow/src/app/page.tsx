@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Boxes, ShieldCheck, Sparkles, Workflow, ArrowRight, BarChart3, Clock, CheckCircle2, LayoutDashboard } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Boxes, ShieldCheck, Sparkles, Workflow, ArrowRight, BarChart3, Clock, CheckCircle2, LayoutDashboard, LogOut, SunMoon } from "lucide-react";
 import { motion } from "framer-motion";
+import { getCurrentUser } from "@/lib/admin-client";
 
 export default function HomePage() {
   const containerVariants = {
@@ -28,8 +30,34 @@ export default function HomePage() {
     }
   } as const;
 
+  const [professional, setProfessional] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('af_theme_professional') === '1';
+    setProfessional(saved);
+    (async () => {
+      try {
+        const u = await getCurrentUser();
+        if (u?.success) setCurrentUser(u.data);
+      } catch (e) {}
+    })();
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('af_theme_professional', professional ? '1' : '0');
+  }, [professional]);
+
+  async function handleLogout() {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } finally {
+      window.location.href = '/';
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50 selection:bg-indigo-100 selection:text-indigo-900 dark:bg-slate-950 dark:selection:bg-indigo-900/50 dark:selection:text-indigo-100">
+    <div className={`min-h-screen selection:bg-indigo-100 selection:text-indigo-900 dark:selection:bg-indigo-900/50 dark:selection:text-indigo-100 ${professional ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-950'}`}>
       
       {/* Navigation */}
       <nav className="fixed inset-x-0 top-0 z-50 border-b border-slate-200/80 bg-white/70 py-4 backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/70">
@@ -55,6 +83,16 @@ export default function HomePage() {
             <Link href="/signup" className="hidden rounded-full bg-indigo-600 px-5 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700 hover:shadow sm:inline-flex dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
               Get Started
             </Link>
+            <button onClick={() => setProfessional(p => !p)} title="Toggle professional theme" className="ml-2 inline-flex items-center gap-2 rounded px-3 py-1 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300">
+              <SunMoon className="h-4 w-4" />
+              <span className="hidden sm:inline">{professional ? 'Professional' : 'Vibrant'}</span>
+            </button>
+            {currentUser?.email && (
+              <button onClick={handleLogout} title="Sign out" className="ml-2 inline-flex items-center gap-2 rounded px-3 py-1 text-sm font-medium text-rose-600 hover:bg-rose-50">
+                <LogOut className="h-4 w-4" />
+                <span className="hidden sm:inline">Logout</span>
+              </button>
+            )}
           </motion.div>
         </div>
       </nav>
@@ -129,6 +167,31 @@ export default function HomePage() {
               <img src="/screenshots/dashboard.png" alt="AssetFlow Dashboard" className="w-full object-cover transition-all duration-700 hover:scale-[1.01]" />
             </div>
           </motion.div>
+        </section>
+
+        {/* Extra Info: RBAC & Project Notes (added) */}
+        <section className="py-12 sm:py-16 bg-white/0">
+          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+            <div className="rounded-lg border border-slate-200 p-6 dark:border-slate-800">
+              <h3 className="text-xl font-semibold text-slate-900 dark:text-white">About RBAC and Admin Controls</h3>
+              <p className="mt-3 text-sm text-slate-600 dark:text-slate-300">This project uses role-based access control (RBAC) to protect sensitive actions: Admins and scoped managers can approve bookings, assets, complete maintenance requests, and manage employees and departments. RBAC checks are enforced server-side in the <span className="font-mono">/api/admin</span> route and helper functions live in src/lib/rbac.ts.</p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-md bg-slate-50 p-3 dark:bg-slate-800">
+                  <strong>Admin</strong>
+                  <div className="text-sm text-slate-600 dark:text-slate-300">Full system control: approve/remove users, change roles, approve assets, deactivate organizations.</div>
+                </div>
+                <div className="rounded-md bg-slate-50 p-3 dark:bg-slate-800">
+                  <strong>Asset Manager</strong>
+                  <div className="text-sm text-slate-600 dark:text-slate-300">Manage asset lifecycle and status (active, maintenance, allocated).</div>
+                </div>
+                <div className="rounded-md bg-slate-50 p-3 dark:bg-slate-800">
+                  <strong>Department Head</strong>
+                  <div className="text-sm text-slate-600 dark:text-slate-300">Approve bookings and resources for their department.</div>
+                </div>
+              </div>
+              <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">Server-side enforcement ensures UI buttons are only cosmetic unless the calling user has the required role. Activity logs and notifications are created for admin actions.</p>
+            </div>
+          </div>
         </section>
 
         {/* Features Section */}
