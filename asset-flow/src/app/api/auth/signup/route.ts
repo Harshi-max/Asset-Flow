@@ -16,6 +16,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: "Email and password are required" }, { status: 400 });
     }
 
+    const missingEnv = [] as string[];
+    if (!process.env.DATABASE_URL) missingEnv.push("DATABASE_URL");
+    if (!process.env.JWT_SECRET) missingEnv.push("JWT_SECRET");
+
+    if (missingEnv.length > 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Signup failed: missing server environment variables (${missingEnv.join(", ")}). Add them in Vercel project settings.`,
+        },
+        { status: 500 }
+      );
+    }
+
     const prisma = getPrismaClient();
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
@@ -38,6 +52,7 @@ export async function POST(request: Request) {
     return response;
   } catch (error) {
     console.error("Signup error:", error);
-    return NextResponse.json({ success: false, message: "Signup failed" }, { status: 500 });
+    const detail = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ success: false, message: `Signup failed: ${detail}` }, { status: 500 });
   }
 }
