@@ -20,7 +20,7 @@
 
 | Email | Password |
 |-------|----------|
-| `asima@gmail.com` | `Asima@31` |
+| `asimafirdous@gmail.com` | `Asima@31` |
 
 #### 🛠️ Admin Account
 
