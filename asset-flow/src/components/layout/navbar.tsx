@@ -1,10 +1,11 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { Bell, Menu, Moon, Search, Sun, SunMoon, X } from "lucide-react";
+import { Bell, Menu, Moon, Search, Sun, SunMoon, X, LogOut } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Boxes, FileText, LayoutDashboard, Settings, ShieldCheck } from "lucide-react";
 
 const links = [
@@ -23,6 +24,7 @@ type SearchResults = {
 
 export function Navbar() {
   const { theme, setTheme } = useTheme();
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -57,6 +59,14 @@ export function Navbar() {
   }, []);
 
   useEffect(() => setMounted(true), []);
+
+  async function handleLogout() {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    } finally {
+      router.push('/');
+    }
+  }
 
   return (
     <>
@@ -128,6 +138,13 @@ export function Navbar() {
             </button>
             <button className="rounded-full border border-slate-200 bg-white p-2.5 text-slate-600 transition hover:-translate-y-0.5 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800">
               <Bell className="h-4 w-4" />
+            </button>
+            <button
+              onClick={handleLogout}
+              className="rounded-full border border-slate-200 bg-white p-2.5 text-slate-600 transition hover:-translate-y-0.5 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+              aria-label="Log out"
+            >
+              <LogOut className="h-4 w-4" />
             </button>
             <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-gradient-to-br from-indigo-600 to-sky-500 px-3 py-2 text-sm font-semibold text-white shadow-sm">
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/20">AD</span>
