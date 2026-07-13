@@ -65,6 +65,20 @@ export async function POST(request: Request) {
         await prisma.activityLog.create({ data: { action: `Approved asset: ${id} by ${userPayload.sub}` } });
         break;
       }
+      case "changeAssetStatus": {
+        if (!id) throw new Error("Missing id");
+        const newStatus = bodyPayload?.status;
+        if (!newStatus) throw new Error("Missing status");
+        if (!canApproveAssets(userPayload.role)) throw new Error("Not authorized");
+        // Validate allowed statuses to avoid Prisma enum errors
+        const allowed = new Set(['ACTIVE','ALLOCATED','MAINTENANCE','RESERVED','LOST','RETIRED']);
+        if (!allowed.has(newStatus)) throw new Error("Invalid status");
+        result = await prisma.asset.update({ where: { id }, data: { status: newStatus } });
+        await prisma.assetHistory.create({ data: { assetId: id, action: 'status_change', details: `status -> ${newStatus}` } });
+        message = `Asset ${result.name} status changed to ${newStatus}`;
+        await prisma.activityLog.create({ data: { action: `Asset status changed: ${id} -> ${newStatus} by ${userPayload.sub}` } });
+        break;
+      }
       case "completeMaintenance": {
         if (!id) throw new Error("Missing id");
         if (!canCompleteMaintenance(userPayload.role)) throw new Error("Not authorized");

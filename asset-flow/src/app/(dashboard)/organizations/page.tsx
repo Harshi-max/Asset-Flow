@@ -9,6 +9,8 @@ import { Drawer } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Building2, Loader2, Plus, Tag } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { adminAction, getCurrentUser } from "@/lib/admin-client";
+import { useCallback } from "react";
 
 export default function OrganizationsPage() {
   const [departments, setDepartments] = useState<any[]>([]);
@@ -61,8 +63,35 @@ export default function OrganizationsPage() {
     { key: "description", header: "Description", cell: (it: any) => it.description ?? <span className="text-slate-400">—</span> },
     { key: "head", header: "Department Head", cell: (it: any) => it.head?.name ?? <span className="text-slate-400">—</span> },
     { key: "_count", header: "Members", cell: (it: any) => <span className="font-semibold text-slate-700 dark:text-slate-300">{it.members?.length ?? 0}</span> },
+    { key: "active", header: "Status", cell: (it: any) => (
+      <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${it.active ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400' : 'bg-slate-100 text-slate-500'}`}>
+        {it.active ? 'Active' : 'Deactivated'}
+      </span>
+    )},
     { key: "createdAt", header: "Created", cell: (it: any) => new Date(it.createdAt).toLocaleDateString() },
+    { key: "actions", header: "Actions", cell: (it: any) => (
+      <div className="flex gap-2">
+        {currentUser?.role && (currentUser.role === 'ADMIN' || currentUser.role === 'DEPARTMENT_HEAD') && (
+          it.active ? (
+            <Button size="sm" variant="destructive" onClick={async () => { if (!confirm('Deactivate this department?')) return; await adminAction('removeOrganization', it.id); load(); }}>Deactivate</Button>
+          ) : (
+            <Button size="sm" onClick={async () => { if (!confirm('Activate this department?')) return; await adminAction('approveOrganization', it.id); load(); }}>Activate</Button>
+          )
+        )}
+      </div>
+    )},
   ];
+
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const j = await getCurrentUser();
+        if (j?.success) setCurrentUser(j.data);
+      } catch (e) { }
+    })();
+  }, []);
 
   const catColumns = [
     { key: "name", header: "Category Name", cell: (it: any) => <span className="font-medium text-slate-800 dark:text-slate-200">{it.name}</span> },

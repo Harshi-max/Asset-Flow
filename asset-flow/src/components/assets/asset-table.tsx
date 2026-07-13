@@ -5,6 +5,7 @@ import { ArrowUpRight, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { DataTable } from "@/components/ui/data-table";
 import { EmptyState } from "@/components/ui/empty-state";
+import { adminAction, getCurrentUser } from "@/lib/admin-client";
 
 const statusClasses: Record<string, string> = {
   AVAILABLE: "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300",
@@ -16,6 +17,7 @@ const statusClasses: Record<string, string> = {
 export function AssetTable() {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
     // Fetch all for local filtering/pagination
@@ -23,6 +25,12 @@ export function AssetTable() {
       .then((r) => r.json())
       .then((j) => setItems(j.data ?? []))
       .finally(() => setLoading(false));
+    (async () => {
+      try {
+        const u = await getCurrentUser();
+        if (u?.success) setCurrentUser(u.data);
+      } catch (e) {}
+    })();
   }, []);
 
   const columns = [
@@ -36,10 +44,22 @@ export function AssetTable() {
       </span>
     )},
     { key: "actions", header: "Actions", cell: (it: any) => (
-      <Link href={`/assets/${it.id}`} className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 transition hover:text-indigo-500 dark:text-indigo-400">
-        Open
-        <ArrowUpRight className="h-3.5 w-3.5" />
-      </Link>
+      <div className="flex items-center gap-2">
+        <Link href={`/assets/${it.id}`} className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 transition hover:text-indigo-500 dark:text-indigo-400">
+          Open
+          <ArrowUpRight className="h-3.5 w-3.5" />
+        </Link>
+        {(currentUser?.role === 'ADMIN' || currentUser?.role === 'ASSET_MANAGER') && (
+          <select defaultValue={it.status} onChange={async (e) => { const s = e.target.value; await adminAction('changeAssetStatus', it.id, { status: s }); const j = await fetch(`/api/assets?perPage=1000`).then(r => r.json()); setItems(j.data ?? []); }} className="rounded border px-2 py-1 text-sm">
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="ALLOCATED">ALLOCATED</option>
+            <option value="MAINTENANCE">MAINTENANCE</option>
+            <option value="RESERVED">RESERVED</option>
+            <option value="LOST">LOST</option>
+            <option value="RETIRED">RETIRED</option>
+          </select>
+        )}
+      </div>
     )}
   ];
 

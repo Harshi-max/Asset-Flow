@@ -269,57 +269,26 @@ function AIChatWidget({ stats }: { stats: any }) {
   const [messages, setMessages] = React.useState<{ role: "user" | "ai"; text: string }[]>([
     { role: "ai", text: "👋 Hi! I can answer questions about your assets, bookings, maintenance, and more. Try asking me something!" },
   ]);
+  const [loading, setLoading] = React.useState(false);
 
-  function getAIReply(q: string): string {
-    const lower = q.toLowerCase();
-    const s = stats ?? {};
-
-    if (lower.includes("total asset") || lower.includes("how many asset")) {
-      return `📦 You currently have **${s.totalAssets ?? 0} total assets** across all categories.`;
-    }
-    if (lower.includes("available")) {
-      return `✅ **${s.available ?? 0} assets** are currently available for allocation or booking.`;
-    }
-    if (lower.includes("allocated") || lower.includes("assigned")) {
-      return `👤 **${s.allocated ?? 0} assets** are currently allocated to employees or departments.`;
-    }
-    if (lower.includes("maintenance") || lower.includes("repair")) {
-      return `🔧 There are **${s.maintenance ?? 0} assets** under maintenance and **${s.pendingMaintenance ?? 0} pending** maintenance requests that need attention.`;
-    }
-    if (lower.includes("booking") || lower.includes("scheduled") || lower.includes("today")) {
-      return `📅 **${s.todaysBookings ?? 0} bookings** are scheduled for today. All active bookings are tracked in the Bookings module.`;
-    }
-    if (lower.includes("employee") || lower.includes("staff") || lower.includes("team")) {
-      return `👥 You have **${s.totalEmployees ?? 0} total employees** across **${s.departments ?? 0} departments**. Active employees can be managed from the Employees page.`;
-    }
-    if (lower.includes("department")) {
-      return `🏢 There are **${s.departments ?? 0} departments** registered in the system, each with their own asset allocations.`;
-    }
-    if (lower.includes("lost") || lower.includes("retire") || lower.includes("missing")) {
-      return `⚠️ **${s.lostRetired ?? 0} assets** are marked as lost or retired. You should review these in the Assets module.`;
-    }
-    if (lower.includes("notification") || lower.includes("alert")) {
-      return `🔔 You have **${s.notifications ?? 0} notifications**. Check the Notifications page for full details.`;
-    }
-    if (lower.includes("audit")) {
-      return `🛡️ The audit log tracks every action on the platform. Head to the Audit Logs page to see the full trail.`;
-    }
-    if (lower.includes("category") || lower.includes("categories")) {
-      return `🗂️ Assets are organized into **${s.categories ?? 0} categories**. You can filter by category on the Assets page.`;
-    }
-    if (lower.includes("help") || lower.includes("what can") || lower.includes("hello") || lower.includes("hi")) {
-      return `I can help you with:\n• Asset counts & statuses\n• Booking & maintenance summaries\n• Employee & department info\n• Notifications & audit info\n\nJust ask me anything about your data!`;
-    }
-    return `🤖 I found data for your query. Currently you have **${s.totalAssets ?? 0} assets**, **${s.totalEmployees ?? 0} employees**, and **${s.todaysBookings ?? 0} bookings today**. For deeper analysis, explore the individual modules from the sidebar.`;
-  }
-
-  function handleSend() {
+  async function handleSend() {
     const q = input.trim();
     if (!q) return;
     const userMsg = { role: "user" as const, text: q };
-    const aiMsg = { role: "ai" as const, text: getAIReply(q) };
-    setMessages((prev) => [...prev, userMsg, aiMsg]);
+    setMessages((prev) => [...prev, userMsg]);
     setInput("");
+    setLoading(true);
+    try {
+      const res = await fetch('/api/ai', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ q }) });
+      const j = await res.json();
+      const aiText = j?.reply ?? (j?.message ?? 'Sorry, I could not answer that.');
+      const aiMsg = { role: 'ai' as const, text: aiText };
+      setMessages((prev) => [...prev, aiMsg]);
+    } catch (e) {
+      setMessages((prev) => [...prev, { role: 'ai', text: 'Error: failed to contact AI service.' }]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -354,7 +323,7 @@ function AIChatWidget({ stats }: { stats: any }) {
             onClick={handleSend}
             className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-700"
           >
-            Ask
+            {loading ? 'Thinking...' : 'Ask'}
           </button>
         </div>
       </div>

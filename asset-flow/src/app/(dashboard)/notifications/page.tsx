@@ -13,8 +13,9 @@ export default function NotificationsPage() {
     setLoading(true);
     try {
       const res = await fetch('/api/notifications', { credentials: 'include' });
-      const j = await res.json();
-      setItems(j?.data ?? []);
+        const j = await res.json();
+        // show only unread notifications by default
+        setItems((j?.data ?? []).filter((n: any) => !n.read));
     } catch (e) {
       setItems([]);
     } finally {
