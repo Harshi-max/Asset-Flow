@@ -14,7 +14,21 @@
 🚀 **Deployed Application:**  
 👉 https://asset-flow-4obb.vercel.app/
 
+### Demo Credentials
 
+#### 👤 User Account
+
+| Email | Password |
+|-------|----------|
+| `asima@gmail.com` | `Asima@31` |
+
+#### 🛠️ Admin Account
+
+| Username | Password |
+|----------|----------|
+| `admin123` | `123` |
+
+> **Note:** These are demo accounts provided for evaluation and testing purposes only.
 # 📖 Overview
 
 **AssetFlow** is a modern **Enterprise Asset & Resource Management System (ERP)** that enables organizations to efficiently manage physical assets, shared resources, maintenance operations, audits, and employee allocations from a centralized platform.
