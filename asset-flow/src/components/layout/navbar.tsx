@@ -15,12 +15,18 @@ const links = [
   { href: "/organizations", label: "Organizations", icon: Settings },
 ];
 
+type SearchResults = {
+  assets: Array<{ id: string; name?: string | null; tag?: string | null }>;
+  departments: Array<{ id: string; name: string }>;
+  audit: Array<{ id: string; action: string }>;
+};
+
 export function Navbar() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<any>({ assets: [], departments: [], audit: [] });
+  const [results, setResults] = useState<SearchResults>({ assets: [], departments: [], audit: [] });
   const [showDropdown, setShowDropdown] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const debounceRef = useRef<number | null>(null);
@@ -91,8 +97,8 @@ export function Navbar() {
                 <div className="grid grid-cols-3 gap-3">
                   <div>
                     <h4 className="mb-2 text-xs font-semibold text-slate-500">Assets</h4>
-                    {results.assets.length === 0 ? <div className="text-sm text-slate-400">No assets</div> : results.assets.map(a => (
-                      <Link key={a.id} href={`/assets?q=${encodeURIComponent(a.name ?? a.tag)}`} className="block py-1 text-sm hover:underline">{a.name ?? a.tag}</Link>
+                    {results.assets.length === 0 ? <div className="text-sm text-slate-400">No assets</div> : results.assets.map((a) => (
+                      <Link key={a.id} href={`/assets?q=${encodeURIComponent(a.name ?? a.tag ?? "")}`} className="block py-1 text-sm hover:underline">{a.name ?? a.tag}</Link>
                     ))}
                   </div>
                   <div>

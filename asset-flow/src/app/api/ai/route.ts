@@ -31,7 +31,7 @@ async function detectEntity(q: string, prisma: any) {
     for (const d of depts) {
       const nameLower = (d.name || '').toLowerCase();
       if (!nameLower) continue;
-      if (lower.includes(nameLower) || nameLower.split(/\s+/).every(tok => lower.includes(tok))) {
+      if (lower.includes(nameLower) || nameLower.split(/\s+/).every((tok: string) => lower.includes(tok))) {
         return { entity: 'department', departmentId: d.id, departmentName: d.name };
       }
     }

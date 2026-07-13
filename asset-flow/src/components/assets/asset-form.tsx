@@ -9,7 +9,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useEffect } from "react";
-import { Select } from "@/components/ui/select";
 
 type FormValues = z.infer<typeof assetCreateSchema>;
 

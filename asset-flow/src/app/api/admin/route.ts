@@ -33,7 +33,7 @@ export async function POST(request: Request) {
         break;
       }
       case "changeRole": {
-        if (!id || !payload?.role) throw new Error("Missing id or role");
+        if (!id || !bodyPayload?.role) throw new Error("Missing id or role");
         if (!canManageEmployees(userPayload.role)) throw new Error("Not authorized");
         result = await prisma.user.update({ where: { id }, data: { role: bodyPayload.role } });
         message = `Role for ${result.name ?? result.email} changed to ${bodyPayload.role}`;

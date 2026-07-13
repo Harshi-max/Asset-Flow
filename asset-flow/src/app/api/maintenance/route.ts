@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/prisma-safe";
+import { verifyToken } from "@/lib/auth";
 
 export async function GET() {
   try {
