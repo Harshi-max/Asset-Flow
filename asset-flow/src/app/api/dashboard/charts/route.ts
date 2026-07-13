@@ -27,10 +27,13 @@ export async function GET() {
         }
       }
     });
-    const departmentUtilization = departments.map((d: { name: string; _count: { allocations: number } }) => ({
-      name: d.name,
-      allocated: d._count.allocations,
-    })).sort((a, b) => b.allocated - a.allocated).slice(0, 5); // top 5
+    const departmentUtilization = departments
+      .map((d: { name: string; _count: { allocations: number } }) => ({
+        name: d.name,
+        allocated: d._count.allocations,
+      }))
+      .sort((a: { name: string; allocated: number }, b: { name: string; allocated: number }) => b.allocated - a.allocated)
+      .slice(0, 5); // top 5
 
     // 3. Maintenance Trend (Mocked for 6 months based on current data if sparse)
     // In a real app we'd group by month using raw SQL or grouping.

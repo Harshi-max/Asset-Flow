@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getPrismaClient } from "@/lib/prisma-safe";
 import { assetCreateSchema } from "@/validations/asset";
+import { env } from "@/config/env";
 import fs from "fs";
 import path from "path";
 
@@ -52,7 +53,7 @@ export async function POST(request: Request) {
       // handle documents
       const files = form.getAll('documents') as File[];
       if (files && files.length) {
-        const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+        const uploadDir = path.resolve(process.cwd(), env.UPLOAD_PATH);
         if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
         for (const f of files) {
           try {

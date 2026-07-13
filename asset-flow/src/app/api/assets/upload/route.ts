@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     }
 
     const buffer = Buffer.from(contentBase64, "base64");
-    const uploadsRoot = env.UPLOAD_PATH ?? "./storage/uploads";
+    const uploadsRoot = path.resolve(process.cwd(), env.UPLOAD_PATH);
     await fs.promises.mkdir(uploadsRoot, { recursive: true });
     const id = randomUUID();
     const ext = path.extname(filename);
