@@ -9,6 +9,7 @@ import { Drawer } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Wrench, Loader2, Plus, AlertCircle, CheckCircle2, Clock, XCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { getCurrentUser, adminAction } from "@/lib/admin-client";
 
 const PRIORITIES = ["LOW", "MEDIUM", "HIGH", "CRITICAL"];
 const statusStyles: Record<string, string> = {
@@ -31,6 +32,15 @@ export default function MaintenancePage() {
   const [formLoading, setFormLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({ assetId: "", requestedById: "", priority: "MEDIUM", issue: "" });
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const j = await getCurrentUser();
+        if (j?.success) setForm(f => ({ ...f, requestedById: j.data.id }));
+      } catch (e) { /* ignore */ }
+    })();
+  }, []);
 
   const stats = {
     total: items.length,
@@ -87,7 +97,25 @@ export default function MaintenancePage() {
     },
     { key: "createdAt", header: "Reported", cell: (it: any) => new Date(it.createdAt).toLocaleDateString() },
     { key: "requestedBy", header: "Reported By", cell: (it: any) => it.requestedBy?.name ?? it.requestedById ?? "—" },
+    { key: "actions", header: "Actions", cell: (it: any) => (
+      <div className="flex gap-2">
+        {currentUser?.role && (currentUser.role === 'ADMIN' || currentUser.role === 'ASSET_MANAGER') && it.status !== 'COMPLETED' && (
+          <Button size="sm" onClick={async () => { await adminAction('completeMaintenance', it.id); load(); }}>Mark Completed</Button>
+        )}
+      </div>
+    )},
   ];
+
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const j = await getCurrentUser();
+        if (j?.success) setCurrentUser(j.data);
+      } catch (e) { /* ignore */ }
+    })();
+  }, []);
 
   return (
     <AnimatedPage className="space-y-6">
@@ -143,7 +171,7 @@ export default function MaintenancePage() {
             )}
           </AnimatePresence>
           <Input label="Asset ID" value={form.assetId} onChange={e => setForm(f => ({ ...f, assetId: e.target.value }))} required />
-          <Input label="Requested By (User ID)" value={form.requestedById} onChange={e => setForm(f => ({ ...f, requestedById: e.target.value }))} required />
+          <Input label="Requested By (User ID) — leave blank to use current user" value={form.requestedById} onChange={e => setForm(f => ({ ...f, requestedById: e.target.value }))} />
           <div className="relative w-full rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50 focus-within:border-indigo-500">
             <label className="pointer-events-none absolute left-3 top-2 text-[10px] font-semibold uppercase tracking-wider text-indigo-600">Priority</label>
             <select value={form.priority} onChange={e => setForm(f => ({ ...f, priority: e.target.value }))} className="w-full appearance-none bg-transparent px-3 pb-2 pt-6 text-sm text-slate-900 outline-none dark:text-white">

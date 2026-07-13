@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { adminAction, getCurrentUser } from "@/lib/admin-client";
 import { AnimatedPage } from "@/components/ui/animated-page";
 import { PageHeader } from "@/components/common/page-header";
 import { DataTable } from "@/components/ui/data-table";
@@ -39,7 +40,23 @@ export default function BookingsPage() {
         {it.status}
       </span>
     )}
+    ,{ key: "actions", header: "Actions", cell: (it: any) => (
+      <div className="flex gap-2">
+        {currentUser?.role && (currentUser.role === 'ADMIN' || currentUser.role === 'DEPARTMENT_HEAD') && it.status === 'PENDING' && (
+          <Button size="sm" onClick={async () => { await adminAction('approveBooking', it.id); load(); }}>Approve</Button>
+        )}
+      </div>
+    )}
   ];
+
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    (async () => {
+      const j = await getCurrentUser();
+      if (j?.success) setCurrentUser(j.data);
+    })();
+  }, []);
 
   return (
     <AnimatedPage className="space-y-6">

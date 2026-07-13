@@ -9,6 +9,7 @@ import { Drawer } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Users, Loader2, Plus, UserCheck, UserX, Building2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { adminAction, getCurrentUser } from "@/lib/admin-client";
 
 const ROLES = ["ADMIN", "ASSET_MANAGER", "DEPARTMENT_HEAD", "EMPLOYEE"];
 const roleStyles: Record<string, string> = {
@@ -33,6 +34,8 @@ export default function EmployeesPage() {
     admins: items.filter(i => i.role === "ADMIN").length,
   };
 
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
   async function load() {
     setLoading(true);
     const res = await fetch("/api/employees");
@@ -43,18 +46,34 @@ export default function EmployeesPage() {
 
   useEffect(() => { load(); }, []);
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const j = await getCurrentUser();
+        if (j?.success) setCurrentUser(j.data);
+      } catch (e) { /* ignore */ }
+    })();
+  }, []);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setFormLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/auth/register", {
+      const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      const j = await res.json();
-      if (!j?.success && !j?.user) throw new Error(j?.message || "Failed to create employee");
+      // parse JSON safely; if server returned HTML (dev error page), surface a friendly message
+      let j: any;
+      try {
+        j = await res.json();
+      } catch (parseErr) {
+        const text = await res.text();
+        throw new Error(text.startsWith("<") ? "Server error: see terminal for details" : text || "Failed to parse response");
+      }
+      if (!j?.success) throw new Error(j?.message || "Failed to create employee");
       setOpen(false);
       setForm({ name: "", email: "", password: "", role: "EMPLOYEE" });
       load();
@@ -92,6 +111,24 @@ export default function EmployeesPage() {
       ),
     },
     { key: "createdAt", header: "Joined", cell: (it: any) => new Date(it.createdAt).toLocaleDateString() },
+    {
+      key: "actions", header: "Actions",
+      cell: (it: any) => (
+        <div className="flex gap-2">
+          {currentUser?.role === 'ADMIN' && it.isActive === false && (
+            <Button size="sm" onClick={async () => { await adminAction('approveEmployee', it.id); load(); }} className="rounded">Approve</Button>
+          )}
+          {currentUser?.role === 'ADMIN' && (
+            <Button size="sm" variant="destructive" onClick={async () => { if (!confirm('Remove employee?')) return; await adminAction('removeEmployee', it.id); load(); }} className="rounded">Remove</Button>
+          )}
+          {currentUser?.role === 'ADMIN' && (
+            <select value={it.role} onChange={async (e) => { await adminAction('changeRole', it.id, { role: e.target.value }); load(); }} className="rounded border px-2 py-1 text-sm">
+              {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+            </select>
+          )}
+        </div>
+      ),
+    },
   ];
 
   return (

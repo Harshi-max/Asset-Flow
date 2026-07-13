@@ -59,6 +59,24 @@ async function main() {
     }
   });
 
+  // Create alternate admin user requested by the user (admin123 / 123)
+  const admin123Exists = await prisma.user.findUnique({ where: { email: "admin123@assetflow.com" } });
+  if (!admin123Exists) {
+    const admin123Hash = await bcrypt.hash("123", 10);
+    await prisma.user.create({
+      data: {
+        email: "admin123@assetflow.com",
+        name: "admin123",
+        passwordHash: admin123Hash,
+        role: "ADMIN",
+        departmentId: departments.find((d: { id: string; name: string }) => d.name === "Administration")?.id,
+      }
+    });
+    console.log("Created admin user admin123@assetflow.com (password: 123)");
+  } else {
+    console.log("Admin user admin123 already exists. Skipping creation.");
+  }
+
   const manager = await prisma.user.create({
     data: {
       email: "manager@assetflow.com",

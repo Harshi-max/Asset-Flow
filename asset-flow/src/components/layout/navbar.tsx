@@ -3,7 +3,7 @@
 import { useTheme } from "next-themes";
 import { Bell, Menu, Moon, Search, Sun, SunMoon, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { Boxes, FileText, LayoutDashboard, Settings, ShieldCheck } from "lucide-react";
 
@@ -19,6 +19,36 @@ export function Navbar() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<any>({ assets: [], departments: [], audit: [] });
+  const [showDropdown, setShowDropdown] = useState(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const debounceRef = useRef<number | null>(null);
+
+  function handleChange(val: string) {
+    setQuery(val);
+    setShowDropdown(Boolean(val && val.length > 0));
+    if (debounceRef.current) window.clearTimeout(debounceRef.current);
+    debounceRef.current = window.setTimeout(async () => {
+      if (!val || val.trim().length === 0) {
+        setResults({ assets: [], departments: [], audit: [] });
+        return;
+      }
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(val)}`);
+        const j = await res.json();
+        if (j?.success) {
+          setResults({ assets: j.data.assets ?? [], departments: j.data.departments ?? [], audit: j.data.audit ?? [] });
+        }
+      } catch (e) {
+        // ignore
+      }
+    }, 300) as unknown as number;
+  }
+
+  useEffect(() => {
+    return () => { if (debounceRef.current) window.clearTimeout(debounceRef.current); };
+  }, []);
 
   useEffect(() => setMounted(true), []);
 
@@ -39,9 +69,47 @@ export function Navbar() {
             </div>
           </div>
 
-          <div className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 px-3 py-2.5 text-sm text-slate-500 shadow-sm dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-400">
+          <div className="relative flex min-w-0 flex-1 items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 px-3 py-2.5 text-sm text-slate-500 shadow-sm dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-400">
             <Search className="h-4 w-4 shrink-0" />
-            <span className="truncate">Search assets, teams, and reports</span>
+            {mounted ? (
+              <>
+                <input
+                  aria-label="Search"
+                  className="min-w-0 bg-transparent text-sm outline-none placeholder:text-slate-400"
+                  placeholder="Search assets, teams, and reports"
+                  value={query}
+                    onChange={(e) => handleChange(e.target.value)}
+                    ref={inputRef}
+                  />
+                </>
+              ) : (
+              <span className="truncate">Search assets, teams, and reports</span>
+            )}
+
+            {mounted && showDropdown && query && (
+              <div className="absolute left-0 top-full mt-2 w-[560px] max-w-full rounded-xl border border-slate-200 bg-white p-3 shadow-lg dark:border-slate-800 dark:bg-slate-900">
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <h4 className="mb-2 text-xs font-semibold text-slate-500">Assets</h4>
+                    {results.assets.length === 0 ? <div className="text-sm text-slate-400">No assets</div> : results.assets.map(a => (
+                      <Link key={a.id} href={`/assets?q=${encodeURIComponent(a.name ?? a.tag)}`} className="block py-1 text-sm hover:underline">{a.name ?? a.tag}</Link>
+                    ))}
+                  </div>
+                  <div>
+                    <h4 className="mb-2 text-xs font-semibold text-slate-500">Teams</h4>
+                    {results.departments.length === 0 ? <div className="text-sm text-slate-400">No teams</div> : results.departments.map(d => (
+                      <Link key={d.id} href={`/organizations?q=${encodeURIComponent(d.name)}`} className="block py-1 text-sm hover:underline">{d.name}</Link>
+                    ))}
+                  </div>
+                  <div>
+                    <h4 className="mb-2 text-xs font-semibold text-slate-500">Reports</h4>
+                    {results.audit.length === 0 ? <div className="text-sm text-slate-400">No reports</div> : results.audit.map(r => (
+                      <Link key={r.id} href={`/reports?q=${encodeURIComponent(r.action)}`} className="block py-1 text-sm hover:underline">{r.action}</Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">

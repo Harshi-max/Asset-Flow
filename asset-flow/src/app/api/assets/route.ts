@@ -30,7 +30,20 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const parsed = assetCreateSchema.parse(body);
+    // Validate foreign keys if present
+    if (parsed.categoryId) {
+      const cat = await prisma.assetCategory.findUnique({ where: { id: parsed.categoryId } });
+      if (!cat) return NextResponse.json({ success: false, message: "Category not found" }, { status: 400 });
+    }
+    if (parsed.departmentId) {
+      const dept = await prisma.department.findUnique({ where: { id: parsed.departmentId } });
+      if (!dept) return NextResponse.json({ success: false, message: "Department not found" }, { status: 400 });
+    }
+
     const created = await prisma.asset.create({ data: parsed });
+    await prisma.activityLog.create({ data: { action: `Asset Created: ${created.name} (${created.tag})` } });
+    await prisma.notification.create({ data: { message: `New asset added: ${created.name}` } });
+
     return NextResponse.json({ success: true, data: created });
   } catch (error: any) {
     return NextResponse.json({ success: false, message: error?.message ?? "Invalid data" }, { status: 400 });

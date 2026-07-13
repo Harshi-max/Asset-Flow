@@ -18,5 +18,7 @@ export async function POST(request: Request) {
       active: body.active ?? true,
     },
   });
+  await prisma.activityLog.create({ data: { action: `Department Created: ${department.name}` } });
+  await prisma.notification.create({ data: { message: `Organization added: ${department.name}` } });
   return NextResponse.json({ success: true, data: department });
 }

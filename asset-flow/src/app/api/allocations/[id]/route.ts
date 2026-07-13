@@ -18,6 +18,8 @@ export async function PUT(request: Request, { params }: any) {
     const updated = await prisma.allocation.update({ where: { id }, data: { status: "RETURNED", returnedAt: new Date(), updatedAt: new Date() } });
     await prisma.allocationHistory.create({ data: { allocationId: id, action: "RETURNED", notes: body.notes ?? null } });
     await prisma.asset.update({ where: { id: updated.assetId }, data: { status: "ACTIVE" } });
+    await prisma.activityLog.create({ data: { action: `Allocation Returned: ${updated.id} for asset ${updated.assetId}` } });
+    await prisma.notification.create({ data: { message: `Asset returned: allocation ${updated.id}` } });
     return NextResponse.json({ success: true, data: updated });
   }
 
