@@ -24,7 +24,7 @@ export function Navbar() {
 
   return (
     <>
-      <header className="border-b border-slate-200 bg-white/80 px-4 py-4 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/80 sm:px-6">
+      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 px-4 py-4 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/80 sm:px-6">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 lg:hidden">
             <button

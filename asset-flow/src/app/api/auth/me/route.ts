@@ -12,7 +12,7 @@ export async function GET() {
 
   try {
     const prisma = getPrismaClient();
-    const payload = verifyToken(token);
+    const payload = await verifyToken(token);
     const user = await prisma.user.findUnique({ where: { id: payload.sub } });
     if (!user) {
       return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });

@@ -1,5 +1,6 @@
+import { NextResponse } from "next/server";
 import { successResponse } from "@/lib/api-response";
 
 export async function GET() {
-  return Response.json(successResponse({ status: "ok" }));
+  return NextResponse.json(successResponse({ status: "ok" }));
 }

@@ -2,9 +2,10 @@ import { getPrismaClient } from "@/lib/prisma-safe";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default async function AssetDetailPage({ params }: { params: { id: string } }) {
+export default async function AssetDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const prisma = getPrismaClient();
-  const asset = await prisma.asset.findUnique({ where: { id: params.id }, include: { documents: true, history: true } });
+  const { id } = await params;
+  const asset = await prisma.asset.findUnique({ where: { id }, include: { documents: true, history: true } });
   if (!asset) notFound();
 
   return (

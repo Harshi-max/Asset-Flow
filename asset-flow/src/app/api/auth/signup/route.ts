@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { hashPassword } from "@/lib/auth";
+import { hashPassword, signToken } from "@/lib/auth";
 import { getPrismaClient } from "@/lib/prisma-safe";
 
 export async function POST(request: Request) {
@@ -32,8 +32,12 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json({ success: true, data: { id: user.id, email: user.email, role: user.role } });
+    const token = await signToken({ sub: user.id, role: user.role });
+    const response = NextResponse.json({ success: true, data: { id: user.id, email: user.email, role: user.role } });
+    response.cookies.set("auth_token", token, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production" });
+    return response;
   } catch (error) {
+    console.error("Signup error:", error);
     return NextResponse.json({ success: false, message: "Signup failed" }, { status: 500 });
   }
 }

@@ -19,14 +19,20 @@ export default function SignupPage() {
     setLoading(true);
     setError("");
 
-    const response = await fetch("/api/auth/signup", {
+    console.log("Signup form submitted with:", { email, password });
+    const url = "/api/auth/signup";
+    console.log("Fetching from:", url);
+    
+    const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password, role: "EMPLOYEE" }),
     });
+    
+    console.log("Response status:", response.status, "ok:", response.ok);
 
     if (response.ok) {
-      router.push("/login");
+      router.push("/dashboard");
       return;
     }
 
@@ -47,15 +53,15 @@ export default function SignupPage() {
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-700 dark:text-slate-200" htmlFor="name">Name</label>
-              <input id="name" className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-800 dark:focus:border-slate-300" placeholder="Jordan Lee" value={name} onChange={(event) => setName(event.target.value)} />
+              <input id="name" className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-800 dark:focus:border-slate-300" placeholder="Jordan Lee" value={name} onChange={(event) => setName(event.target.value)} required />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-700 dark:text-slate-200" htmlFor="email">Email</label>
-              <input id="email" className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-800 dark:focus:border-slate-300" placeholder="you@company.com" value={email} onChange={(event) => setEmail(event.target.value)} />
+              <input id="email" className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-800 dark:focus:border-slate-300" placeholder="you@company.com" value={email} onChange={(event) => setEmail(event.target.value)} required />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-700 dark:text-slate-200" htmlFor="password">Password</label>
-              <input id="password" className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-800 dark:focus:border-slate-300" placeholder="Create a strong password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
+              <input id="password" className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-slate-900 focus:bg-white dark:border-slate-700 dark:bg-slate-800 dark:focus:border-slate-300" placeholder="Create a strong password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} required />
             </div>
             {error ? <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300">{error}</p> : null}
             <Button className="w-full" size="lg" type="submit" disabled={loading}>
