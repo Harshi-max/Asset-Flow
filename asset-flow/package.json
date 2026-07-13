@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write .",
-    "prepare": "husky"
+    "prepare": "husky" ,
+     "postinstall": "prisma generate"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,json,md}": [
@@ -64,4 +65,5 @@
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   }
+  
 }
